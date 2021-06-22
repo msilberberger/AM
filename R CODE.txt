@@ -1,0 +1,72 @@
+# Required packages
+library(tidyverse)
+library(plm)
+library(lfe)
+library(lmtest)
+library(car)
+
+https://rdrr.io/rforge/plm/man/Grunfeld.html
+
+# Getting the dataset
+data("Grunfeld", package="plm")
+
+
+Grunfeld %>%
+  select(year, firm) %>%
+  table()
+
+Grunfeld %>%
+  is.pbalanced()
+
+
+ggplot(data = Grunfeld, aes(x = year, y = inv)) +
+  geom_line() +
+  labs(x = "Year",  y = "Gross Investment") +
+  theme(legend.position = "none")
+
+
+
+pooled_ols_lm <- lm(inv ~ capital, data = Grunfeld )
+
+summary(pooled_ols_lm)
+
+
+
+
+fe_model_lm <- lm(inv ~ capital + factor(firm), data = Grunfeld)
+
+summary(fe_model_lm)
+
+fixef(fe_model_plm)
+
+
+
+fe_model_fd<- plm(inv ~ capital -1, data = Grunfeld,
+                  index = c("firm", "year"), 
+                  effect = "individual", model = "fd")
+
+summary(fe_model_fd)
+
+
+
+
+re_model_plm <- plm(inv ~ capital, data = Grunfeld, 
+                    index = c("firm", "year"), 
+                    effect = "individual", model = "random")
+
+summary(re_model_plm)
+
+
+
+phtest(fe_model_plm, re_model_plm)
+
+
+fe_model_plm <- plm(inv ~ capital, data = Grunfeld, 
+                    index = c("firm", "year"), 
+                    effect = "individual", model = "within")
+
+summary(fe_model_plm)
+
+
+
+https://rpubs.com/phle/r_tutorial_panel_data_analysis
